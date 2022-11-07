@@ -1,3 +1,6 @@
+/*Имеется последовательность строк - (cat, cat, dog, cat, tree)
+создать для нее собственное множество.*/
+
 package main
 
 import "fmt"
@@ -43,9 +46,9 @@ func NewSet[T comparable]() Set[T] {
 }
 
 func main() {
-	setOneStr := NewSet[string]()
+	setStr := NewSet[string]()
 
-	setOneStr.Add("cat", "cat", "dog", "cat", "tree")
+	setStr.Add("cat", "cat", "dog", "cat", "tree")
 
-	fmt.Println(setOneStr.GetValues())
+	fmt.Println(setStr.GetValues())
 }

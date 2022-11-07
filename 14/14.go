@@ -1,3 +1,6 @@
+/*Разработать программу, которая в рантайме способна определить
+тип переменной: int, string, bool, channel из переменной типа interface{}.*/
+
 package main
 
 import "fmt"
@@ -20,7 +23,7 @@ func checkType(param interface{}) {
 		fmt.Println("Is string")
 	case bool:
 		fmt.Println("Is bool")
-	case chan any:
+	case chan int:
 		fmt.Println("Is chan")
 	default:
 		fmt.Println("unexpected type")

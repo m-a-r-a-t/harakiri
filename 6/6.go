@@ -1,3 +1,5 @@
+/*Реализовать все возможные способы остановки выполнения горутины.*/
+
 package main
 
 import (
@@ -43,9 +45,9 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
-	stopChan <- 1
+	stopChan <- 1 // отправляем сигнал о завершении первой горутины
 	close(stopChan)
-	isStoped = true
+	isStoped = true // ставим флаг что вторая горутина тоже должна завершиться 
 
 	wg.Wait()
 

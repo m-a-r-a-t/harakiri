@@ -1,3 +1,6 @@
+/*Разработать программу, которая будет последовательно отправлять значения в канал,
+а с другой стороны канала — читать. По истечению N секунд программа должна завершаться.*/
+
 package main
 
 import (
@@ -7,11 +10,6 @@ import (
 	"sync"
 	"time"
 )
-
-/*
-! Разработать программу, которая будет последовательно отправлять значения в канал,
-! а с другой стороны канала — читать. По истечению N секунд программа должна завершаться.
-*/
 
 type DataChannelEntity struct {
 	ch       chan any
@@ -47,16 +45,16 @@ func main() {
 
 	go runDataSender(dataChannelEntity, &wg)
 
-	time.Sleep(time.Duration(timeCount) * time.Second)
+	time.Sleep(time.Duration(timeCount) * time.Second) // ждем n секунд
 
 	dataChannelEntity.mutex.Lock()
-	dataChannelEntity.isOpened = false
-	close(dataChannelEntity.ch)
+	dataChannelEntity.isOpened = false // закрываем канал для datasender
+	close(dataChannelEntity.ch) // закрываем канал
 	dataChannelEntity.mutex.Unlock()
 
 	fmt.Println("Please wait until the data sender and data reader finish their work")
 
-	wg.Wait()
+	wg.Wait() // ждем пока все горутины завершаться
 
 }
 

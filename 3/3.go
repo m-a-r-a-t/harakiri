@@ -1,3 +1,7 @@
+/*Дана последовательность чисел: 2,4,6,8,10.
+Найти сумму их квадратов(22+32+42….) с использованием конкурентных вычислений.*/
+
+
 package main
 
 import (
@@ -11,7 +15,7 @@ func main() {
 	squareChan := make(chan int64)
 	sumChan := make(chan int64)
 
-	go func() {
+	go func() { // горутина суммирования значений
 		var sum int64 = 0
 		for num := range squareChan {
 
@@ -28,7 +32,7 @@ func main() {
 	}
 
 	wgSquare.Wait() // Блокировка до тех пор пока не выполняться все горутины
-	close(squareChan)
+	close(squareChan) // Закрываем канал, чтобы завершилась горутина суммирования
 
 	fmt.Println("Sum:", <-sumChan)
 }

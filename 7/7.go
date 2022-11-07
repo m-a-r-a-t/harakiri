@@ -1,3 +1,5 @@
+/*Реализовать конкурентную запись данных в map.*/
+
 package main
 
 import (
@@ -13,13 +15,16 @@ type SyncMap struct {
 func main() {
 	var wg sync.WaitGroup
 
+	stdSyncMap := sync.Map{}
+
 	syncMap := &SyncMap{
 		data: make(map[int]int),
 	}
 
 	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go writeToMap(syncMap, &wg)
+		wg.Add(2)
+		go writeToMap(syncMap, &wg) // запись в SyncMap.data
+		go writeToStdSyncMap(&stdSyncMap, &wg) // запись в sync.Map
 	}
 
 	wg.Wait()
@@ -33,5 +38,13 @@ func writeToMap(syncMap *SyncMap, wg *sync.WaitGroup) {
 		syncMap.mu.Lock()
 		syncMap.data[i] = rand.Int()
 		syncMap.mu.Unlock()
+	}
+}
+
+func writeToStdSyncMap(syncMap *sync.Map, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for i := 0; i < 100; i++ {
+		syncMap.Store(i, rand.Int())
 	}
 }

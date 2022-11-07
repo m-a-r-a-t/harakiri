@@ -1,3 +1,18 @@
+/*К каким негативным последствиям может привести данный фрагмент кода, и как это исправить? Приведите корректный пример реализации.
+
+
+var justString string
+func someFunc() {
+  v := createHugeString(1 << 10)
+  justString = v[:100]
+}
+
+func main() {
+  someFunc()
+}
+*/
+
+
 package main
 
 import (
@@ -13,10 +28,10 @@ func main() {
 
 func someFunc() {
 	v := createHugeString(1 << 10)
-	runes := []rune(v)
+	runes := []rune(v) // переводим строку в руны так как в строке могут быть символы юникода
 	ind := 100
 	fmt.Println(len(v))
-	if ind <= len(runes)-1 {
+	if ind <= len(runes)-1 { // проверяем доступен ли такой индекс в слайсе
 		justString := runes[:100]
 		fmt.Println("String:", string(justString))
 
@@ -25,8 +40,8 @@ func someFunc() {
 	}
 
 }
-
-func createHugeString(n int) string {
+// функция создающая длинную юникод строку
+func createHugeString(n int) string { 
 	var s string
 	for i := 0; i < n; i++ {
 		if i%2 == 0 {

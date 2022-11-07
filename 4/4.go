@@ -1,11 +1,7 @@
-// package main
-
-// import (
-// 	"flag"
-// 	"fmt"
-// 	"math/rand"
-// 	"time"
-// )
+/*Реализовать постоянную запись данных в канал (главный поток). Реализовать набор из N воркеров,
+которые читают произвольные данные из канала и выводят в stdout.
+Необходима возможность выбора количества воркеров при старте.
+Программа должна завершаться по нажатию Ctrl+C. Выбрать и обосновать способ завершения работы всех воркеров.*/
 
 package main
 
@@ -20,16 +16,16 @@ import (
 	"time"
 )
 
-type Worker struct {
+type Worker struct { 
 	ch  <-chan any
 	num int
 	wg  *sync.WaitGroup
 }
 
-type DataChannelEntity struct {
+type DataChannelEntity struct { 
 	ch       chan any
-	isOpened bool
-	mutex    sync.Mutex
+	isOpened bool // для того чтобы обозначить runDataSender ,что канал уже закрыт
+	mutex    sync.Mutex // для безопасного доступа к DataChannelEntity
 }
 
 func main() {
@@ -37,29 +33,29 @@ func main() {
 
 	signalChan, exit_chan := make(chan os.Signal, 1), make(chan int)
 
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM) // подписываемся signalChan на события о завершении работы по нажатию Ctrl+C
 
-	flag.IntVar(&countOfWorkers, "w", 1, "Specify countOfWorkers. Default is 1")
+	flag.IntVar(&countOfWorkers, "w", 1, "Specify countOfWorkers. Default is 1") // задаем число воркеров из stdinp
 
 	flag.Parse()
 
 	var workersWaitGroup sync.WaitGroup
-	workersWaitGroup.Add(countOfWorkers + 1)
+	workersWaitGroup.Add(countOfWorkers + 1) // +1 так как помимо воркеров еще есть datasender
 	dataChannelEntity := &DataChannelEntity{
 		ch:       make(chan any),
 		isOpened: true,
 	}
 
-	go interruptListener(signalChan, dataChannelEntity, &workersWaitGroup, exit_chan)
+	go interruptListener(signalChan, dataChannelEntity, &workersWaitGroup, exit_chan) 
 
 	for i := 0; i < countOfWorkers; i++ {
 		w := Worker{num: i + 1, ch: dataChannelEntity.ch, wg: &workersWaitGroup}
-		go w.run()
+		go w.run() // запуск n воркеров 
 	}
 
 	go runDataSender(dataChannelEntity, &workersWaitGroup)
 
-	exitCode := <-exit_chan
+	exitCode := <-exit_chan // ждем сигнал о завершении
 	os.Exit(exitCode)
 }
 
@@ -76,7 +72,7 @@ func (w *Worker) run() {
 
 }
 
-func runDataSender(dataChannelEntity *DataChannelEntity, wg *sync.WaitGroup) {
+func runDataSender(dataChannelEntity *DataChannelEntity, wg *sync.WaitGroup) { // функция записи в канал
 	defer wg.Done()
 	defer fmt.Println("Data sender closed")
 
@@ -104,16 +100,16 @@ func interruptListener(signalChan chan os.Signal, dataChannelEntity *DataChannel
 		if s == syscall.SIGINT {
 			fmt.Println("Please wait until the workers finish their work")
 
-			dataChannelEntity.mutex.Lock()
-			dataChannelEntity.isOpened = false
-			close(dataChannelEntity.ch)
-			dataChannelEntity.mutex.Unlock()
+			dataChannelEntity.mutex.Lock() // закрываем доступ к dataChannelEntity
+			dataChannelEntity.isOpened = false // обозначаем что канал для datasender закрыт
+			close(dataChannelEntity.ch) // закрываем канал: воркеры сами завершают свой цикл
+			dataChannelEntity.mutex.Unlock() // открываем доступ к dataChannelEntity
 
-			workersWaitGroup.Wait()
-			break
+			workersWaitGroup.Wait() // ждем пока все воркеры + datasender завершаться 
+			break // выходим из цикла
 		}
 
 	}
 	
-	exit_chan <- 0
+	exit_chan <- 0 // отправляем сигнал о завершении
 }

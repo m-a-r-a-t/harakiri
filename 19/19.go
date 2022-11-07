@@ -1,3 +1,6 @@
+/*Разработать программу, которая переворачивает
+подаваемую на ход строку (например: «главрыба — абырвалг»). Символы могут быть unicode.*/
+
 package main
 
 import (
@@ -11,7 +14,7 @@ func main() {
 }
 
 func reverseStr(s string) string {
-	runes := []rune(s)
+	runes := []rune(s) // переводим в руны так как могут быть символы unicode
 	var reversedStr strings.Builder
 	strLength := len(runes)
 

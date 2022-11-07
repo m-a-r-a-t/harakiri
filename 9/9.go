@@ -1,3 +1,6 @@
+/*Разработать конвейер чисел. Даны два канала: в первый пишутся числа (x) из массива,
+ во второй — результат операции x*2, после чего данные из второго канала должны выводиться в stdout.*/
+
 package main
 
 import "fmt"
@@ -10,7 +13,7 @@ func main() {
 	squareChan := make(chan int64)
 
 	go func() {
-		defer close(squareChan)
+		defer close(squareChan) // после завершения канала numbersFromArrChan закрываем squareChan
 		for n := range numbersFromArrChan {
 			squareChan <- n * n
 		}
@@ -20,7 +23,7 @@ func main() {
 		for square := range squareChan {
 			fmt.Println(square)
 		}
-		exitChan <- 0
+		exitChan <- 0 // после завершения squareChan отправится сигнал о завершении
 	}()
 
 	for _, val := range numbersArr {
